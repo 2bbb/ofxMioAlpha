@@ -7,22 +7,13 @@
 
 #pragma once
 
-#include "ofxMioAlphaInterface.h"
+#import "ofxMioAlphaInterface.h"
+#import <Foundation/Foundation.h>
 
-class ofxMioAlphaBridge {
-public:
-    ofxMioAlphaBridge();
-    virtual ~ofxMioAlphaBridge();
-    
-    void setup(ofxMioAlphaInterface *interface);
-    void addDeviceUUID(const string &uuid);
-    bool startScan();
-    
-    void setConnected(bool bConnected);
-    
-    void receiveHeartrate(int heartRate);
-
-private:
+@interface ofxMioAlphaBridge : NSObject {
     ofxMioAlphaInterface *interface;
-    void *bridgeImpl;
-};
+}
+
+- (instancetype)initWithInterface:(ofxMioAlphaInterface *)interface;
+
+@end

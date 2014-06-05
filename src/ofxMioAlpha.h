@@ -9,14 +9,13 @@
 #include "ofMain.h"
 #include "ofxMioAlphaInterface.h"
 
-class ofxMioAlphaBridge;
-
 class ofxMioAlpha : public ofxMioAlphaInterface {
 public:
     void setup(ofxMioAlphaInterface *interface = NULL);
     void addDeviceUUID(const string &uuid);
     bool startScan();
-
+    void stopScan();
+    
     vector<int> getLatestHeartBeatsFromDevice(const string &uuid);
     bool isConnectedToDevice(const string &uuid) const;
     
@@ -27,5 +26,5 @@ private:
     map<string, bool> deviceConnectionInfos;
     map<string, vector<int> > latestHeartRates;
     ofxMioAlphaInterface *interface;
-    ofxMioAlphaBridge *bridge;
+    void *bridge;
 };

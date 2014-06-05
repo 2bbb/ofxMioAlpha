@@ -6,22 +6,28 @@
 
 #include "ofxMioAlpha.h"
 #import "ofxMioAlphaBridge.h"
+#import "BluetoothManager.h"
 
 void ofxMioAlpha::setup(ofxMioAlphaInterface *interface) {
-    bridge = new ofxMioAlphaBridge();
-    bridge->setup(this);
-    bridge->startScan();
-    
+    bridge = (void *)[[ofxMioAlphaBridge alloc] initWithInterface:this];
     this->interface = interface;
 }
 
 void ofxMioAlpha::addDeviceUUID(const string &uuid) {
-    bridge->addDeviceUUID(uuid);
+    NSString *uuidStr = [NSString stringWithCString:uuid.c_str()
+                                           encoding:NSUTF8StringEncoding];
+    [[BluetoothManager sharedManager] addTargetUUID:uuidStr];
 }
 
 bool ofxMioAlpha::startScan() {
-    return bridge->startScan();
+    return (bool)[[BluetoothManager sharedManager] scan];
 }
+
+void ofxMioAlpha::stopScan() {
+    [[BluetoothManager sharedManager] stopScan];
+}
+
+#pragma mark getter
 
 vector<int> ofxMioAlpha::getLatestHeartBeatsFromDevice(const string &uuid) {
     vector<int> results = latestHeartRates[uuid];
@@ -33,6 +39,8 @@ vector<int> ofxMioAlpha::getLatestHeartBeatsFromDevice(const string &uuid) {
 bool ofxMioAlpha::isConnectedToDevice(const string &uuid) const {
     return deviceConnectionInfos.at(uuid);
 }
+
+#pragma mark implementation of ofxMioAlphaInterface
 
 void ofxMioAlpha::receiveHeartRate(const string &uuid, int heartRate) {
     latestHeartRates[uuid].push_back(heartRate);

@@ -7,38 +7,56 @@
 
 #import "ofxMioAlphaBridge.h"
 #import "BluetoothManager.h"
-#import "ofxMioAlphaBridgeImpl.h"
 
-ofxMioAlphaBridge::ofxMioAlphaBridge() {
-    bridgeImpl = NULL;
-}
+@interface ofxMioAlphaBridge ()
 
-ofxMioAlphaBridge::~ofxMioAlphaBridge() {
-    if(bridgeImpl != NULL) {
-        [(ofxMioAlphaBridgeImpl *)bridgeImpl release];
-        bridgeImpl = NULL;
+- (void)updateValue:(NSNotification *)notification;
+- (void)connected:(NSNotification *)notification;
+- (void)disconnected:(NSNotification *)notification;
+
+@end
+
+@implementation ofxMioAlphaBridge
+
+- (instancetype)initWithInterface:(ofxMioAlphaInterface *)_interface {
+    self = [super init];
+    if(self) {
+        interface = _interface;
+        NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+        [defaultCenter addObserver:self
+                          selector:@selector(updateValue:)
+                              name:BMBluetoothUpdateValueNotification
+                            object:nil];
+        [defaultCenter addObserver:self
+                          selector:@selector(connected:)
+                              name:BMBluetoothConnectedNotification
+                            object:nil];
+        [defaultCenter addObserver:self
+                          selector:@selector(disconnected:)
+                              name:BMBluetoothDisconnectedNotification
+                            object:nil];
     }
+    return self;
 }
 
-void ofxMioAlphaBridge::setup(ofxMioAlphaInterface *interface) {
-    this->interface = interface;
-    bridgeImpl = (ofxMioAlphaBridgeImpl *)[[ofxMioAlphaBridgeImpl alloc] initWithBridge:this];
+- (void)updateValue:(NSNotification *)notification {
+    NSDictionary *userInfo = [notification userInfo];
+    int heartRate = [[userInfo objectForKey:BMHeartRateBPMKey] intValue];
+    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    interface->receiveHeartRate(uuid, heartRate);
 }
 
-void ofxMioAlphaBridge::addDeviceUUID(const string &uuid) {
-    ofxMioAlphaBridgeImpl *impl = (ofxMioAlphaBridgeImpl *)bridgeImpl;
-    [impl addDeviceUUID:[NSString stringWithCString:uuid.c_str()
-                                           encoding:NSUTF8StringEncoding]];
+- (void)connected:(NSNotification *)notification {
+    NSDictionary *userInfo = [notification userInfo];
+    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    interface->updateConnectionState(uuid, true);
 }
 
-bool ofxMioAlphaBridge::startScan() {
-    return (bool)[(ofxMioAlphaBridgeImpl *)bridgeImpl startScan];
+- (void)disconnected:(NSNotification *)notification {
+    NSDictionary *userInfo = [notification userInfo];
+    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    interface->updateConnectionState(uuid, false);
 }
 
-void ofxMioAlphaBridge::setConnected(bool bConnected) {
-    interface->updateConnectionState("", bConnected);
-}
+@end
 
-void ofxMioAlphaBridge::receiveHeartrate(int heartRate) {
-    interface->receiveHeartRate("", heartRate);
-}

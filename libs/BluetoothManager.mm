@@ -62,6 +62,10 @@ static BluetoothManager *sharedManager = nil;
     }
 }
 
+- (void)stopScan {
+    [centralManager stopScan];
+}
+
 - (void)disconnect {
 }
 
@@ -106,7 +110,6 @@ static BluetoothManager *sharedManager = nil;
         [aPeripheral setDelegate:self];
         [centralManager connectPeripheral:aPeripheral
                                   options:nil];
-        [centralManager stopScan];
         rssi = [RSSI floatValue];
     } else if([dataLocalName isEqualToString:mioName]) {
         NSLog(@"Found Mio Device: %@", targetStr);

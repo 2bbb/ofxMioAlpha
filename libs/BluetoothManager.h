@@ -30,6 +30,7 @@ extern NSString * const BMDeviceKey;
 
 - (void)addTargetUUID:(NSString *)uuid;
 - (BOOL)scan;
+- (void)stopScan;
 - (void)disconnect;
 
 - (BOOL)isConnected;

@@ -6,6 +6,7 @@
 //
 
 #import "BluetoothManager.h"
+#import <CoreServices/CoreServices.h>
 
 NSString * const BMBluetoothUpdateValueNotification = @"BMBluetoothUpdateValueNotification";
 NSString * const BMBluetoothConnectedNotification = @"BMBluetoothConnectedNotification";
@@ -40,7 +41,14 @@ static BluetoothManager *sharedManager = nil;
 - (instancetype)init {
     self = [super init];
     if(self) {
-        centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:nil];
+//        SInt32 minor;
+//        Gestalt(gestaltSystemVersionMinor, &minor);
+//        if(9 <= minor) {
+//            centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:nil];
+//        } else {
+//            centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
+//        }
+        centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
         isConnected = NO;
         targetUUIDs = [NSMutableArray new];
         peripherals = [NSMutableArray new];

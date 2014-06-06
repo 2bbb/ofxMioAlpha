@@ -48,7 +48,8 @@
 
 - (void)connected:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
-    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
+    string uuid = string([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
     interface->updateConnectionState(uuid, true);
 }
 

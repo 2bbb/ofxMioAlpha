@@ -43,6 +43,7 @@ static BluetoothManager *sharedManager = nil;
         centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:nil];
         isConnected = NO;
         targetUUIDs = [NSMutableArray new];
+        peripherals = [NSMutableArray new];
     }
     return self;
 }
@@ -67,6 +68,9 @@ static BluetoothManager *sharedManager = nil;
 }
 
 - (void)disconnect {
+    for(CBPeripheral *peripheral in peripherals) {
+        [centralManager cancelPeripheralConnection:peripheral];
+    }
 }
 
 - (BOOL)isConnected {
@@ -106,9 +110,9 @@ static BluetoothManager *sharedManager = nil;
     
     NSString *dataLocalName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
     if([[advertisementData objectForKey:CBAdvertisementDataLocalNameKey] isEqualToString:mioName] && isTarget) {
-        aPeripheral = peripheral;
-        [aPeripheral setDelegate:self];
-        [centralManager connectPeripheral:aPeripheral
+        [peripherals addObject:peripheral];
+        [peripheral setDelegate:self];
+        [centralManager connectPeripheral:peripheral
                                   options:nil];
         rssi = [RSSI floatValue];
     } else if([dataLocalName isEqualToString:mioName]) {
@@ -125,8 +129,12 @@ static BluetoothManager *sharedManager = nil;
     rssi = [[peripheral RSSI] floatValue];
     
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
-    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothConnectedNotification
-                                                        object:@{BMDeviceKey:uuid}];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothConnectedNotification
+//                                                        object:@{BMDeviceKey:uuid}];
+    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothConnectedNotification
+                                                                 object:nil
+                                                               userInfo:@{BMDeviceKey:uuid}];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void)centralManager:(CBCentralManager *)central
@@ -138,9 +146,13 @@ didDisconnectPeripheral:(CBPeripheral *)peripheral
     isConnected = NO;
     rssi = -1000000;
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
-    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothDisconnectedNotification
-                                                        object:@{BMDeviceKey:uuid}];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothDisconnectedNotification
+//                                                        object:@{BMDeviceKey:uuid}];
 
+    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDisconnectedNotification
+                                                                 object:nil
+                                                               userInfo:@{BMDeviceKey:uuid}];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void)centralManager:(CBCentralManager *)central
@@ -151,8 +163,12 @@ didFailToConnectPeripheral:(CBPeripheral *)peripheral
     isConnected = NO;
     rssi = -1000000;
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
-    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothDisconnectedNotification
-                                                        object:@{BMDeviceKey:uuid}];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothDisconnectedNotification
+//                                                        object:@{BMDeviceKey:uuid}];
+    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDisconnectedNotification
+                                                                 object:nil
+                                                               userInfo:@{BMDeviceKey:uuid}];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 #pragma mark Peripheral
@@ -213,12 +229,23 @@ didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
     NSDictionary *info = @{ BMHeartRateBPMKey : @(bpm),
                             BMDeviceKey: uuid};
-    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothUpdateValueNotification
-                                                        object:info];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:BMBluetoothUpdateValueNotification
+//                                                        object:info];
+    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothUpdateValueNotification
+                                                                 object:nil
+                                                               userInfo:info];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+
 }
 
 - (void)peripheralDidUpdateRSSI:(CBPeripheral *)peripheral error:(NSError *)error {
     rssi = [[peripheral RSSI] floatValue];
+}
+
+- (void)dealloc {
+    [self disconnect];
+    
+    [super dealloc];
 }
 
 @end

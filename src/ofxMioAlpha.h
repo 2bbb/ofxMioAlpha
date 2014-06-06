@@ -6,15 +6,18 @@
 
 #pragma once
 
-#include "ofMain.h"
 #include "ofxMioAlphaInterface.h"
 
 class ofxMioAlpha : public ofxMioAlphaInterface {
 public:
+    ofxMioAlpha();
+    virtual ~ofxMioAlpha();
+    
     void setup(ofxMioAlphaInterface *interface = NULL);
     void addDeviceUUID(const string &uuid);
     bool startScan();
     void stopScan();
+    void disconnect();
     
     vector<int> getLatestHeartBeatsFromDevice(const string &uuid);
     bool isConnectedToDevice(const string &uuid) const;

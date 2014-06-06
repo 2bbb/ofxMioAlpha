@@ -24,6 +24,7 @@ extern NSString * const BMDeviceKey;
     BOOL isConnected;
     float rssi;
     NSMutableArray *targetUUIDs;
+    NSMutableArray *peripherals;
 }
 
 + (BluetoothManager *)sharedManager;

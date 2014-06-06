@@ -18,7 +18,13 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    void exit();
+    void exit() {
+        mio.disconnect();
+    }
+    
 private:
     ofxMioAlpha mio;
+    bool bStartScan;
+    
+    vector<string> uuids;
 };

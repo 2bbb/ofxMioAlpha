@@ -2,7 +2,7 @@
 
 ## How to use
 
-1. Add IOBluetooth.framework to your project
+1. Add IOBluetooth.framework (or CoreBluetooth.framework on iOS) to your project
 2. Include ofxMioAlpha.h
 
 ## API

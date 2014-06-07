@@ -13,11 +13,16 @@
 #   import <IOBluetooth/IOBluetooth.h>
 #endif
 
+extern NSString * const BMBluetoothDeviceFoundNotification;
 extern NSString * const BMBluetoothUpdateValueNotification;
 extern NSString * const BMBluetoothConnectedNotification;
 extern NSString * const BMBluetoothDisconnectedNotification;
+
 extern NSString * const BMHeartRateBPMKey;
 extern NSString * const BMDeviceKey;
+extern NSString * const BMDeviceIsInTargetsKey;
+
+extern NSString * const BMLocalName;
 
 @interface BluetoothManager : NSObject <
     CBCentralManagerDelegate,

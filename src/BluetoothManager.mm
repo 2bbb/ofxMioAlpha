@@ -51,7 +51,7 @@ static BluetoothManager *sharedManager = nil;
         peripherals = [NSMutableDictionary new];
         targetLocalNames = [[NSMutableArray alloc] initWithArray:@[@"MIO GLOBAL", @"MIO GLOBAL LINK"]];
         
-        targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation];
+        targetServiceCharacteristic = [[CBUUID alloc] initWithString:BMTargetServiceCharacteristicStringPresentation];
     }
     return self;
 }

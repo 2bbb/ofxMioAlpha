@@ -6,7 +6,7 @@
 //
 
 #import "BluetoothManager.h"
-#import <CoreServices/CoreServices.h>
+//#import <CoreServices/CoreServices.h>
 
 NSString * const BMBluetoothUpdateValueNotification = @"BMBluetoothUpdateValueNotification";
 NSString * const BMBluetoothConnectedNotification = @"BMBluetoothConnectedNotification";

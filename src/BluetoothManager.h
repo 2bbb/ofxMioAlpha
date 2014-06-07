@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-#   import <CoreBlutooth/CoreBluetooth.h>
+#   import <CoreBluetooth/CoreBluetooth.h>
 #elif TARGET_OS_MAC
 #   import <IOBluetooth/IOBluetooth.h>
 #endif

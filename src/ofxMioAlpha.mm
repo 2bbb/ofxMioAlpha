@@ -58,7 +58,28 @@ bool ofxMioAlpha::isConnectedToDevice(const string &uuid) const {
     return deviceConnectionInfos.at(uuid);
 }
 
+const vector<string> &ofxMioAlpha::getConnectedDeviceUUIDs() const {
+    return connectedDeviceUUIDs;
+}
+
+const vector<string> &ofxMioAlpha::getUnknownDeviceUUIDs() const {
+    return unknownDeviceUUIDs;
+}
+
 #pragma mark implementation of ofxMioAlphaInterface
+
+void ofxMioAlpha::findDevice(const string &uuid, bool isInTarget) {
+    if(isInTarget) {
+        
+    } else {
+        vector<string>::iterator result = find(unknownDeviceUUIDs.begin(), unknownDeviceUUIDs.end() , uuid);
+        
+        if(result == unknownDeviceUUIDs.end()){
+            unknownDeviceUUIDs.push_back(uuid);
+        }
+        ofLogVerbose() << uuid << " is found.";
+    }
+}
 
 void ofxMioAlpha::receiveHeartRate(const string &uuid, int heartRate) {
     latestHeartRates[uuid].push_back(heartRate);

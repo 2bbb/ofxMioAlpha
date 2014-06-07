@@ -10,6 +10,7 @@
 
 @interface ofxMioAlphaBridge ()
 
+- (void)foundDevice:(NSNotification *)notification;
 - (void)updateValue:(NSNotification *)notification;
 - (void)connected:(NSNotification *)notification;
 - (void)disconnected:(NSNotification *)notification;
@@ -24,6 +25,10 @@
         interface = _interface;
         NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
         [defaultCenter addObserver:self
+                          selector:@selector(foundDevice:)
+                              name:BMBluetoothDeviceFoundNotification
+                            object:nil];
+        [defaultCenter addObserver:self
                           selector:@selector(updateValue:)
                               name:BMBluetoothUpdateValueNotification
                             object:nil];
@@ -37,6 +42,13 @@
                             object:nil];
     }
     return self;
+}
+
+- (void)foundDevice:(NSNotification *)notification {
+    NSDictionary *userInfo = [notification userInfo];
+    BOOL isInTargets = [[userInfo objectForKey:BMDeviceIsInTargetsKey] boolValue];
+    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    interface->findDevice(uuid, (bool)isInTargets);
 }
 
 - (void)updateValue:(NSNotification *)notification {
@@ -57,6 +69,12 @@
     NSDictionary *userInfo = [notification userInfo];
     string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
     interface->updateConnectionState(uuid, false);
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [super dealloc];
 }
 
 @end

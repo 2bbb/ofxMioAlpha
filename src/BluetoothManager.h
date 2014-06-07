@@ -31,10 +31,10 @@ extern NSString * const BMLocalName;
     CBCentralManager *centralManager;
     __strong CBPeripheral *aPeripheral;
     
-    BOOL isConnected;
-    float rssi;
     NSMutableArray *targetUUIDs;
-    NSMutableArray *peripherals;
+    NSMutableDictionary *peripherals;
+    
+    CBUUID *targetServiceCharacteristic;
 }
 
 + (BluetoothManager *)sharedManager;
@@ -43,8 +43,5 @@ extern NSString * const BMLocalName;
 - (BOOL)scan;
 - (void)stopScan;
 - (void)disconnect;
-
-- (BOOL)isConnected;
-- (float)rssi;
 
 @end

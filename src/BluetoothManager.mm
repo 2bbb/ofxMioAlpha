@@ -18,6 +18,8 @@ NSString * const BMDeviceIsInTargetsKey = @"BMDeviceIsInTargetsKey";
 
 NSString * const BMLocalName = @"MIO GLOBAL";
 
+NSString * const BMTargetServiceCharacteristicStringPresentation = @"2A37";
+
 #define CompareUUIDs(u1, u2) memcmp(CFUUIDGetUUIDBytes(u1), CFUUIDGetUUIDBytes(u2)
 
 typedef struct {
@@ -45,9 +47,10 @@ static BluetoothManager *sharedManager = nil;
     self = [super init];
     if(self) {
         centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-        isConnected = NO;
         targetUUIDs = [NSMutableArray new];
-        peripherals = [NSMutableArray new];
+        peripherals = [NSMutableDictionary new];
+        
+        targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation];
     }
     return self;
 }
@@ -72,17 +75,9 @@ static BluetoothManager *sharedManager = nil;
 }
 
 - (void)disconnect {
-    for(CBPeripheral *peripheral in peripherals) {
+    for(CBPeripheral *peripheral in [peripherals allValues]) {
         [centralManager cancelPeripheralConnection:peripheral];
     }
-}
-
-- (BOOL)isConnected {
-    return isConnected;
-}
-
-- (float)rssi {
-    return rssi;
 }
 
 #pragma mark CentralManager
@@ -109,14 +104,14 @@ static BluetoothManager *sharedManager = nil;
     }
     
     NSString *dataLocalName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
+    NSLog(@"data local name: %@", dataLocalName);
     if([dataLocalName isEqualToString:BMLocalName]) {
         if(isTarget) {
             NSLog(@"Connectiong start: %@", uuid);
-            [peripherals addObject:peripheral];
+            [peripherals setObject:peripheral forKey:uuid];
             [peripheral setDelegate:self];
             [centralManager connectPeripheral:peripheral
                                       options:nil];
-            rssi = [RSSI floatValue];
         } else {
             NSLog(@"Found Mio Device: %@", uuid);
         }
@@ -133,8 +128,6 @@ static BluetoothManager *sharedManager = nil;
 {
     NSLog(@"success to connect %@", peripheral);
     [peripheral discoverServices:nil];
-    isConnected = YES;
-    rssi = [[peripheral RSSI] floatValue];
     
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
     NSNotification *notification = [NSNotification notificationWithName:BMBluetoothConnectedNotification
@@ -149,8 +142,6 @@ didDisconnectPeripheral:(CBPeripheral *)peripheral
 {
     NSLog(@"disconnect from %@", peripheral);
     [self scan];
-    isConnected = NO;
-    rssi = -1000000;
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
     NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDisconnectedNotification
                                                                  object:nil
@@ -163,8 +154,6 @@ didFailToConnectPeripheral:(CBPeripheral *)peripheral
                       error:(NSError *)error
 {
     NSLog(@"failure to connect... %@", error);
-    isConnected = NO;
-    rssi = -1000000;
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
     NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDisconnectedNotification
                                                                  object:nil
@@ -191,12 +180,9 @@ didDiscoverCharacteristicsForService:(CBService *)service
 {
     for(CBCharacteristic *characteristic in service.characteristics) {
         CBUUID *uuid = [characteristic UUID];
-        CBUUID *target = [CBUUID UUIDWithString:@"2A37"];
-//        NSLog(@"Discovered characteristic %@", [[characteristic UUID] description]);
-        
-        if([uuid isEqual:target]) {
-//            NSLog(@"Mio is %@", [[characteristic UUID] description]);
-            [peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        if([uuid isEqual:targetServiceCharacteristic]) {
+            [peripheral setNotifyValue:YES
+                     forCharacteristic:characteristic];
         }
     }
 }
@@ -236,9 +222,7 @@ didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic
 
 }
 
-- (void)peripheralDidUpdateRSSI:(CBPeripheral *)peripheral error:(NSError *)error {
-    rssi = [[peripheral RSSI] floatValue];
-}
+- (void)peripheralDidUpdateRSSI:(CBPeripheral *)peripheral error:(NSError *)error {}
 
 - (void)dealloc {
     [self disconnect];

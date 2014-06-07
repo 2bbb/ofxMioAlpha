@@ -68,7 +68,7 @@ MIT License.
 
 ## Special Thanks
 
-* [Kyle McDonald](https://twitter.com/kcimc)
+* [Kyle McDonald](https://twitter.com/kcimc) [github](https://github.com/kylemcdonald)
 
 ## At the last
 

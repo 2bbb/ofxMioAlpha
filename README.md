@@ -53,6 +53,10 @@ this is abstract interface of callback receiver. you create class inherits this 
 
 maybe buggy now...
 
+### ver 0.02 [beta] release
+
+maybe corresponded to iOS.
+
 ## License
 
 MIT License.

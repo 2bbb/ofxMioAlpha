@@ -49,6 +49,7 @@ static BluetoothManager *sharedManager = nil;
         centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
         targetUUIDs = [NSMutableArray new];
         peripherals = [NSMutableDictionary new];
+        targetLocalNames = [[NSMutableArray alloc] initWithArray:@[@"MIO GLOBAL", @"MIO GLOBAL LINK"]];
         
         targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation];
     }
@@ -105,7 +106,9 @@ static BluetoothManager *sharedManager = nil;
     
     NSString *dataLocalName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
     NSLog(@"data local name: %@", dataLocalName);
-    if([dataLocalName isEqualToString:BMLocalName]) {
+    
+    // TODO: fix this more excellent.
+    if([dataLocalName isEqualToString:BMLocalName] || [targetLocalNames containsObject:dataLocalName]) {
         if(isTarget) {
             NSLog(@"Connectiong start: %@", uuid);
             [peripherals setObject:peripheral forKey:uuid];

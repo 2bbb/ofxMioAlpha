@@ -35,6 +35,8 @@ extern NSString * const BMLocalName;
     NSMutableDictionary *peripherals;
     
     CBUUID *targetServiceCharacteristic;
+    
+    NSMutableArray *targetLocalNames;
 }
 
 + (BluetoothManager *)sharedManager;

@@ -6,7 +6,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <IOBluetooth/IOBluetooth.h>
+
+#if TARGET_IPHONE_SIMULATOR
+#   import <CoreBlutooth/CoreBluetooth.h>
+#elif TARGET_OS_IPHONE
+#   import <CoreBlutooth/CoreBluetooth.h>
+#elif TARGET_OS_MAC
+#   import <IOBluetooth/IOBluetooth.h>
+#endif
 
 extern NSString * const BMBluetoothUpdateValueNotification;
 extern NSString * const BMBluetoothConnectedNotification;

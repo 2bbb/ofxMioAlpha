@@ -34,14 +34,13 @@ extern NSString * const BMLocalName;
     NSMutableArray *targetUUIDs;
     NSMutableDictionary *peripherals;
     
-    CBUUID *targetServiceCharacteristic;
-    
     NSMutableArray *targetLocalNames;
 }
 
 + (BluetoothManager *)sharedManager;
 
 - (void)addTargetUUID:(NSString *)uuid;
+- (void)addTargetLocalName:(NSString *)localName;
 - (BOOL)scan;
 - (void)stopScan;
 - (void)disconnect;

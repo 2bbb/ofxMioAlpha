@@ -10,6 +10,8 @@
 
 ofxMioAlpha::ofxMioAlpha() {
     bridge = NULL;
+    this->addLocalNameFilter("MIO GLOBAL");
+    this->addLocalNameFilter("MIO GLOBAL LINK");
 }
 
 ofxMioAlpha::~ofxMioAlpha() {
@@ -31,6 +33,11 @@ void ofxMioAlpha::addDeviceUUID(const string &uuid) {
     NSString *uuidStr = [NSString stringWithCString:uuid.c_str()
                                            encoding:NSUTF8StringEncoding];
     [[BluetoothManager sharedManager] addTargetUUID:uuidStr];
+}
+
+void addLocalNameFilter(const string localName) {
+    NSString *locaNameString = [NSString stringWithUTF8String:localName.c_str()];
+    [[BluetoothManager sharedManager] addTargetLocalName:locaNameString];
 }
 
 bool ofxMioAlpha::startScan() {

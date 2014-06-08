@@ -49,19 +49,21 @@ static BluetoothManager *sharedManager = nil;
         centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
         targetUUIDs = [NSMutableArray new];
         peripherals = [NSMutableDictionary new];
-        targetLocalNames = [[NSMutableArray alloc] initWithArray:@[@"MIO GLOBAL", @"MIO GLOBAL LINK"]];
-        
-#if __has_feature(objc_arc)
-        targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation];
-#else
-        targetServiceCharacteristic = [[CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation] retain];
-#endif
+        targetLocalNames = [NSMutableArray new];
     }
     return self;
 }
 
 - (void)addTargetUUID:(NSString *)uuid {
-    [targetUUIDs addObject:uuid];
+    if(![targetUUIDs containsObject:uuid]) {
+        [targetUUIDs addObject:uuid];
+    }
+}
+
+- (void)addTargetLocalName:(NSString *)localName {
+    if(![targetLocalNames containsObject:localName]) {
+        [targetLocalNames addObject:localName];
+    }
 }
 
 - (BOOL)scan {
@@ -108,11 +110,12 @@ static BluetoothManager *sharedManager = nil;
         }
     }
     
+    if(!isTarget) return;
+    
     NSString *dataLocalName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
     NSLog(@"data local name: %@", dataLocalName);
-    
     // TODO: fix this more excellent.
-    if([dataLocalName isEqualToString:BMLocalName] || [targetLocalNames containsObject:dataLocalName]) {
+    if(([targetLocalNames count] == 0) || [targetLocalNames containsObject:dataLocalName]) {
         if(isTarget) {
             NSLog(@"Connectiong start: %@", uuid);
             [peripherals setObject:peripheral forKey:uuid];
@@ -173,10 +176,7 @@ didFailToConnectPeripheral:(CBPeripheral *)peripheral
 - (void)peripheral:(CBPeripheral *)peripheral
 didDiscoverServices:(NSError *)error
 {
-//    NSLog(@"did discover charcteristic for service %@", peripheral);
     for (CBService *service in peripheral.services) {
-//        NSLog(@"Discovered service %@", service);
-//        NSLog(@"Discovering characteristics for service %@", service);
         [peripheral discoverCharacteristics:nil forService:service];
     }
 }
@@ -187,6 +187,8 @@ didDiscoverCharacteristicsForService:(CBService *)service
 {
     for(CBCharacteristic *characteristic in service.characteristics) {
         CBUUID *uuid = [characteristic UUID];
+        CBUUID *targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation];
+
         if([uuid isEqual:targetServiceCharacteristic]) {
             [peripheral setNotifyValue:YES
                      forCharacteristic:characteristic];

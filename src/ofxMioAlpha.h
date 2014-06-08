@@ -15,6 +15,7 @@ public:
     
     void setup(ofxMioAlphaInterface *interface = NULL);
     void addDeviceUUID(const string &uuid);
+    void addLocalNameFilter(const string localName);
     bool startScan();
     void stopScan();
     void disconnect();

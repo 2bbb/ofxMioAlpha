@@ -11,5 +11,4 @@
 class ofxMioAlpha : public ofxBLEHeartRateMeasurement {
 public:
     ofxMioAlpha();
-    virtual ~ofxMioAlpha();
 };

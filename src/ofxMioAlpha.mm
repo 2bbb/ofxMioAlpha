@@ -10,7 +10,3 @@ ofxMioAlpha::ofxMioAlpha() {
     this->addLocalNameFilter("MIO GLOBAL");
     this->addLocalNameFilter("MIO GLOBAL LINK");
 }
-
-ofxMioAlpha::~ofxMioAlpha() {
-    this->stopScan();
-}

@@ -1,16 +1,16 @@
 //
-//  ofxMioAlphaInterface.h
+//  ofxBLEHeartRateMeasurementInterface.h
 //
 //  Created by ISHII 2bit on 2014/06/06.
 //
 //
 
-#ifndef __ofxMioAlphaInterface__
-#define __ofxMioAlphaInterface__
+#ifndef __ofxBLEHeartRateMeasurementInterface__
+#define __ofxBLEHeartRateMeasurementInterface__
 
 #include "ofMain.h"
 
-class ofxMioAlphaInterface {
+class ofxBLEHeartRateMeasurementInterface {
 public:
     virtual void findDevice(const string &uuid, bool isInTarget) {};
     virtual void receiveHeartRate(const string &uuid, int heartRate) = 0;

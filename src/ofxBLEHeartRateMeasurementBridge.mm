@@ -5,10 +5,10 @@
 //
 //
 
-#import "ofxMioAlphaBridge.h"
+#import "ofxBLEHeartRateMeasurementBridge.h"
 #import "BluetoothManager.h"
 
-@interface ofxMioAlphaBridge ()
+@interface ofxBLEHeartRateMeasurementBridge ()
 
 - (void)foundDevice:(NSNotification *)notification;
 - (void)updateValue:(NSNotification *)notification;
@@ -17,9 +17,9 @@
 
 @end
 
-@implementation ofxMioAlphaBridge
+@implementation ofxBLEHeartRateMeasurementBridge
 
-- (instancetype)initWithInterface:(ofxMioAlphaInterface *)_interface {
+- (instancetype)initWithInterface:(ofxBLEHeartRateMeasurementInterface *)_interface {
     self = [super init];
     if(self) {
         interface = _interface;

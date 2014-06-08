@@ -1,9 +1,7 @@
 //
 //  ofxBLEHeartRateMeasurement.h
-//  ofxMioAlphaExample
 //
 //  Created by ISHII 2bit on 2014/06/08.
-//
 //
 
 #pragma once
@@ -28,7 +26,7 @@ public:
     const vector<string> &getConnectedDeviceUUIDs() const;
     const vector<string> &getUnknownDeviceUUIDs() const;
     
-    void findDevice(const string &uuid, bool isInTarget);
+    void foundDevice(const string &uuid, bool isInTarget);
     void receiveHeartRate(const string &uuid, int heartRate);
     void updateConnectionState(const string &uuid, bool isConnected);
     

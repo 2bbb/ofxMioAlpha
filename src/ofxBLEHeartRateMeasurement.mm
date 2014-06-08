@@ -1,9 +1,7 @@
 //
 //  ofxBLEHeartRateMeasurement.cpp
-//  ofxBLEHeartRateMeasurementExample
 //
 //  Created by ISHII 2bit on 2014/06/08.
-//
 //
 
 #include "ofxBLEHeartRateMeasurement.h"
@@ -27,17 +25,16 @@ void ofxBLEHeartRateMeasurement::setup(ofxBLEHeartRateMeasurementInterface *inte
     this->interface = interface;
 }
 
-void ofxBLEHeartRateMeasurement::addDeviceUUID(const string &uuid) {
-    deviceConnectionInfos.insert(map<string, bool>::value_type(uuid, false));
-    latestHeartRates.insert(map<string, vector<int> >::value_type(uuid, vector<int>()));
-    NSString *uuidStr = [NSString stringWithCString:uuid.c_str()
-                                           encoding:NSUTF8StringEncoding];
-    [[BluetoothManager sharedManager] addTargetUUID:uuidStr];
+void ofxBLEHeartRateMeasurement::addDeviceUUID(const string &_uuid) {
+    deviceConnectionInfos.insert(map<string, bool>::value_type(_uuid, false));
+    latestHeartRates.insert(map<string, vector<int> >::value_type(_uuid, vector<int>()));
+    NSString *uuid = [NSString stringWithUTF8String:_uuid.c_str()];
+    [[BluetoothManager sharedManager] addTargetUUID:uuid];
 }
 
-void ofxBLEHeartRateMeasurement::addLocalNameFilter(const string localName) {
-    NSString *locaNameString = [NSString stringWithUTF8String:localName.c_str()];
-    [[BluetoothManager sharedManager] addTargetLocalName:locaNameString];
+void ofxBLEHeartRateMeasurement::addLocalNameFilter(const string _localName) {
+    NSString *locaName = [NSString stringWithUTF8String:_localName.c_str()];
+    [[BluetoothManager sharedManager] addTargetLocalName:locaName];
 }
 
 bool ofxBLEHeartRateMeasurement::startScan() {
@@ -75,7 +72,7 @@ const vector<string> &ofxBLEHeartRateMeasurement::getUnknownDeviceUUIDs() const 
 
 #pragma mark implementation of ofxBLEHeartRateMeasurementInterface
 
-void ofxBLEHeartRateMeasurement::findDevice(const string &uuid, bool isInTarget) {
+void ofxBLEHeartRateMeasurement::foundDevice(const string &uuid, bool isInTarget) {
     if(isInTarget) {
         
     } else {

@@ -26,9 +26,10 @@ public:
     const vector<string> &getConnectedDeviceUUIDs() const;
     const vector<string> &getUnknownDeviceUUIDs() const;
     
-    void foundDevice(const string &uuid, bool isInTarget);
-    void receiveHeartRate(const string &uuid, int heartRate);
+    void foundDevice(const string &uuid, const string &localName, bool isInTarget);
     void updateConnectionState(const string &uuid, bool isConnected);
+    void connectionFailure(const string &uuid, const string &errorDescription);
+    void receiveHeartRate(const string &uuid, int heartRate);
     
 protected:
     map<string, bool> deviceConnectionInfos;

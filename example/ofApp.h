@@ -27,4 +27,5 @@ private:
     bool bStartScan;
     
     vector<string> uuids;
+    float c;
 };

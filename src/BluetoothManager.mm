@@ -1,5 +1,5 @@
 //
-//  ofxBluetoothManager.mm
+//  BluetoothManager.mm
 //
 //  Created by ISHII 2bit on 2014/02/01.
 //  Copyright (c) 2014 buffer Renaiss co., ltd. All rights reserved.
@@ -11,14 +11,16 @@ NSString * const BMBluetoothDeviceFoundNotification = @"BMBluetoothDeviceFoundNo
 NSString * const BMBluetoothUpdateValueNotification = @"BMBluetoothUpdateValueNotification";
 NSString * const BMBluetoothConnectedNotification = @"BMBluetoothConnectedNotification";
 NSString * const BMBluetoothDisconnectedNotification = @"BMBluetoothDisconnectedNotification";
+NSString * const BMBluetoothDidFailToConnectNotification = @"BMBluetoothDidFailToConnectNotification";
 
 NSString * const BMHeartRateBPMKey = @"BMHeartRateBPMKey";
+NSString * const BMLocalNameKey = @"BMLocalNameKey";
 NSString * const BMDeviceKey = @"BMDeviceKey";
 NSString * const BMDeviceIsInTargetsKey = @"BMDeviceIsInTargetsKey";
+NSString * const BMErrorDescriptionKey = @"BMErrorDescriptionKey";
 
-NSString * const BMLocalName = @"MIO GLOBAL";
-
-NSString * const BMTargetServiceCharacteristicStringPresentation = @"2A37";
+NSString * const BMTargetServiceUUIDStringPresentation = @"180D";
+NSString * const BMTargetCharacteristicStringPresentation = @"2A37";
 
 #define CompareUUIDs(u1, u2) memcmp(CFUUIDGetUUIDBytes(u1), CFUUIDGetUUIDBytes(u2)
 
@@ -68,11 +70,12 @@ static BluetoothManager *sharedManager = nil;
 
 - (BOOL)scan {
     if(centralManager.state == CBCentralManagerStatePoweredOn) {
-        NSLog(@"start scan success!!");
+        NSLog(@"start scanning now!!");
         [centralManager scanForPeripheralsWithServices:nil options:nil];
+        [centralManager retrieveConnectedPeripherals];
         return YES;
     } else {
-        NSLog(@"start scan failure...");
+        NSLog(@"can't start scanning.");
         return NO;
     }
 }
@@ -90,9 +93,8 @@ static BluetoothManager *sharedManager = nil;
 #pragma mark CentralManager
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central {
-    NSLog(@"update state");
     if(centralManager.state == CBCentralManagerStatePoweredOn) {
-        NSLog(@"started!");
+        NSLog(@"ready for start scanning!");
     }
 }
 
@@ -110,12 +112,13 @@ static BluetoothManager *sharedManager = nil;
         }
     }
     
-    if(!isTarget) return;
-    
-    NSString *dataLocalName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
-    NSLog(@"data local name: %@", dataLocalName);
+    NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
+    if(localName == nil) {
+        localName = @"[null]";
+    }
+    NSLog(@"data local name: %@", localName);
     // TODO: fix this more excellent.
-    if(([targetLocalNames count] == 0) || [targetLocalNames containsObject:dataLocalName]) {
+    if(([targetLocalNames count] == 0) || [targetLocalNames containsObject:localName]) {
         if(isTarget) {
             NSLog(@"Connectiong start: %@", uuid);
             [peripherals setObject:peripheral forKey:uuid];
@@ -123,14 +126,16 @@ static BluetoothManager *sharedManager = nil;
             [centralManager connectPeripheral:peripheral
                                       options:nil];
         } else {
-            NSLog(@"Found Mio Device: %@", uuid);
+            NSLog(@"Found Device: %@", uuid);
         }
-        NSDictionary *userInfo = @{BMDeviceKey: uuid, BMDeviceIsInTargetsKey: @(isTarget)};
-        NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDeviceFoundNotification
-                                                                     object:nil
-                                                                   userInfo:userInfo];
-        [[NSNotificationCenter defaultCenter] postNotification:notification];
     }
+    NSDictionary *userInfo = @{BMLocalNameKey: localName,
+                               BMDeviceKey: uuid,
+                               BMDeviceIsInTargetsKey: @(isTarget)};
+    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDeviceFoundNotification
+                                                                 object:nil
+                                                               userInfo:userInfo];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void)centralManager:(CBCentralManager *)central
@@ -140,10 +145,28 @@ static BluetoothManager *sharedManager = nil;
     [peripheral discoverServices:nil];
     
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
+    NSDictionary *userInfo = @{BMDeviceKey:uuid};
     NSNotification *notification = [NSNotification notificationWithName:BMBluetoothConnectedNotification
                                                                  object:nil
-                                                               userInfo:@{BMDeviceKey:uuid}];
+                                                               userInfo:userInfo];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (void)centralManager:(CBCentralManager *)central
+didRetrieveConnectedPeripherals:(NSArray *)connectedPeripherals
+{
+    NSLog(@"did retrieve connected peripherals %d", connectedPeripherals.count);
+    for(CBPeripheral *peripheral in connectedPeripherals) {
+//        [central cancelPeripheralConnection:peripheral];
+        [peripheral discoverServices:nil];
+        
+        NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
+        NSDictionary *userInfo = @{BMDeviceKey:uuid};
+        NSNotification *notification = [NSNotification notificationWithName:BMBluetoothConnectedNotification
+                                                                     object:nil
+                                                                   userInfo:userInfo];
+        [[NSNotificationCenter defaultCenter] postNotification:notification];
+    }
 }
 
 - (void)centralManager:(CBCentralManager *)central
@@ -151,8 +174,9 @@ didDisconnectPeripheral:(CBPeripheral *)peripheral
                  error:(NSError *)error
 {
     NSLog(@"disconnect from %@", peripheral);
-    [self scan];
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
+    [centralManager cancelPeripheralConnection:peripheral];
+    [peripherals removeObjectForKey:uuid];
     NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDisconnectedNotification
                                                                  object:nil
                                                                userInfo:@{BMDeviceKey:uuid}];
@@ -165,9 +189,12 @@ didFailToConnectPeripheral:(CBPeripheral *)peripheral
 {
     NSLog(@"failure to connect... %@", error);
     NSString *uuid = (NSString *)CFUUIDCreateString(NULL, [peripheral UUID]);
-    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDisconnectedNotification
+    NSString *errorDescription = [error localizedDescription];
+    NSDictionary *userInfo = @{BMDeviceKey: uuid,
+                               BMErrorDescriptionKey: errorDescription};
+    NSNotification *notification = [NSNotification notificationWithName:BMBluetoothDidFailToConnectNotification
                                                                  object:nil
-                                                               userInfo:@{BMDeviceKey:uuid}];
+                                                               userInfo:userInfo];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
@@ -176,8 +203,9 @@ didFailToConnectPeripheral:(CBPeripheral *)peripheral
 - (void)peripheral:(CBPeripheral *)peripheral
 didDiscoverServices:(NSError *)error
 {
-    for (CBService *service in peripheral.services) {
-        [peripheral discoverCharacteristics:nil forService:service];
+    for(CBService *service in peripheral.services) {
+        [peripheral discoverCharacteristics:nil
+                                 forService:service];
     }
 }
 
@@ -187,7 +215,7 @@ didDiscoverCharacteristicsForService:(CBService *)service
 {
     for(CBCharacteristic *characteristic in service.characteristics) {
         CBUUID *uuid = [characteristic UUID];
-        CBUUID *targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetServiceCharacteristicStringPresentation];
+        CBUUID *targetServiceCharacteristic = [CBUUID UUIDWithString:BMTargetCharacteristicStringPresentation];
 
         if([uuid isEqual:targetServiceCharacteristic]) {
             [peripheral setNotifyValue:YES

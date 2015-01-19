@@ -72,7 +72,7 @@ const vector<string> &ofxBLEHeartRateMeasurement::getUnknownDeviceUUIDs() const 
 
 #pragma mark implementation of ofxBLEHeartRateMeasurementInterface
 
-void ofxBLEHeartRateMeasurement::foundDevice(const string &uuid, bool isInTarget) {
+void ofxBLEHeartRateMeasurement::foundDevice(const string &uuid, const string &localName, bool isInTarget) {
     if(isInTarget) {
         
     } else {
@@ -81,18 +81,22 @@ void ofxBLEHeartRateMeasurement::foundDevice(const string &uuid, bool isInTarget
         if(result == unknownDeviceUUIDs.end()){
             unknownDeviceUUIDs.push_back(uuid);
         }
-        ofLogVerbose() << uuid << " is found.";
+        ofLogNotice() << localName << " [" << uuid << "] is found.";
     }
 }
 
-void ofxBLEHeartRateMeasurement::receiveHeartRate(const string &uuid, int heartRate) {
-    latestHeartRates[uuid].push_back(heartRate);
+void ofxBLEHeartRateMeasurement::connectionFailure(const string &uuid, const string &errorDescription) {
     
-    if(interface) interface->receiveHeartRate(uuid, heartRate);
 }
 
 void ofxBLEHeartRateMeasurement::updateConnectionState(const string &uuid, bool isConnected) {
     deviceConnectionInfos[uuid] = isConnected;
     
     if(interface) interface->updateConnectionState(uuid, isConnected);
+}
+
+void ofxBLEHeartRateMeasurement::receiveHeartRate(const string &uuid, int heartRate) {
+    latestHeartRates[uuid].push_back(heartRate);
+    
+    if(interface) interface->receiveHeartRate(uuid, heartRate);
 }

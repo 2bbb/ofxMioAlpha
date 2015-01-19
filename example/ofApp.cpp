@@ -7,13 +7,14 @@ void ofApp::setup(){
     // Replace your Mio UUID.
     // UUID is printed to log window when we found Mio device.
     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    uuids.push_back("3B9020DF-AA55-41A0-91C3-32B8597914FC");
+    uuids.push_back("BB6BCED9-2EE5-4DD2-9CCD-529D5E9CC0E5");
     uuids.push_back("89CF3564-E897-47DF-A0F1-18ACB8D67BE8");
     for(int i = 0; i < uuids.size(); i++) {
         mio.addDeviceUUID(uuids[i]);
     }
     
     bStartScan = mio.startScan();
+    c = 0.0f;
 }
 
 //--------------------------------------------------------------
@@ -31,15 +32,19 @@ void ofApp::update(){
                 for(auto hb : hbs) {
                     ofLogNotice() << "heart rate " << hb;
                 }
+                c = 255.0f;
             }
         } else {
             
         }
     }
+    
+    c = ofLerp(c, 0, 0.1f);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    ofBackground((unsigned char)(c), 0, 0);
 }
 
 //--------------------------------------------------------------

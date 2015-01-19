@@ -1,5 +1,5 @@
 //
-//  ofxBluetoothManager.h
+//  BluetoothManager.h
 //
 //  Created by ISHII 2bit on 2014/02/01.
 //  Copyright (c) 2014 buffer Renaiss co., ltd. All rights reserved.
@@ -17,19 +17,19 @@ extern NSString * const BMBluetoothDeviceFoundNotification;
 extern NSString * const BMBluetoothUpdateValueNotification;
 extern NSString * const BMBluetoothConnectedNotification;
 extern NSString * const BMBluetoothDisconnectedNotification;
+extern NSString * const BMBluetoothDidFailToConnectNotification;
 
 extern NSString * const BMHeartRateBPMKey;
+extern NSString * const BMLocalNameKey;
 extern NSString * const BMDeviceKey;
 extern NSString * const BMDeviceIsInTargetsKey;
-
-extern NSString * const BMLocalName;
+extern NSString * const BMErrorDescriptionKey;
 
 @interface BluetoothManager : NSObject <
     CBCentralManagerDelegate,
     CBPeripheralDelegate
 > {
     CBCentralManager *centralManager;
-    __strong CBPeripheral *aPeripheral;
     
     NSMutableArray *targetUUIDs;
     NSMutableDictionary *peripherals;

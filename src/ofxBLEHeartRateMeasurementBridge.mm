@@ -14,6 +14,7 @@
 - (void)updateValue:(NSNotification *)notification;
 - (void)connected:(NSNotification *)notification;
 - (void)disconnected:(NSNotification *)notification;
+- (void)didFailToConnect:(NSNotification *)notification;
 
 @end
 
@@ -40,35 +41,56 @@
                           selector:@selector(disconnected:)
                               name:BMBluetoothDisconnectedNotification
                             object:nil];
+        [defaultCenter addObserver:self
+                          selector:@selector(didFailToConnect:)
+                              name:BMBluetoothDidFailToConnectNotification
+                            object:nil];
     }
     return self;
 }
 
 - (void)foundDevice:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
+    
     BOOL isInTargets = [[userInfo objectForKey:BMDeviceIsInTargetsKey] boolValue];
-    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
-    interface->findDevice(uuid, (bool)isInTargets);
+    const string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    const string localName([[userInfo objectForKeyedSubscript:BMLocalNameKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
+    interface->foundDevice(uuid, localName, (bool)isInTargets);
 }
 
 - (void)updateValue:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
+    
     int heartRate = [[userInfo objectForKey:BMHeartRateBPMKey] intValue];
-    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    const string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
     interface->receiveHeartRate(uuid, heartRate);
 }
 
 - (void)connected:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
     
-    string uuid = string([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    const string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
     interface->updateConnectionState(uuid, true);
 }
 
 - (void)disconnected:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
-    string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
+    const string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
     interface->updateConnectionState(uuid, false);
+}
+
+- (void)didFailToConnect:(NSNotification *)notification {
+    NSDictionary *userInfo = [notification userInfo];
+    
+    const string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    const string errorDescription([[userInfo objectForKey:BMErrorDescriptionKey] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
+    interface->connectionFailure(uuid, errorDescription);
 }
 
 - (void)dealloc {

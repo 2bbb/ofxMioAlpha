@@ -1,11 +1,13 @@
 //
-//  ofxBluetoothManager.h
+//  BluetoothManager.h
 //
-//  Created by ISHII 2bit on 2014/02/01.
-//  Copyright (c) 2014 buffer Renaiss co., ltd. All rights reserved.
+//  Created by Morimasa Aketa on 2015/12/12.
+//  Based on the code by ISHII 2bit on 2014/02/01.
+//  Copyright (c) 2015 Morimasa Aketa
 //
 
 #import <Foundation/Foundation.h>
+#import "BlePeripherals.h"
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 #   import <CoreBluetooth/CoreBluetooth.h>
@@ -18,10 +20,10 @@ extern NSString * const BMBluetoothUpdateValueNotification;
 extern NSString * const BMBluetoothConnectedNotification;
 extern NSString * const BMBluetoothDisconnectedNotification;
 
-extern NSString * const BMHeartRateBPMKey;
+extern NSString * const BMValueKey;
+extern NSString * const BMSensorTypeKey;
 extern NSString * const BMDeviceKey;
 extern NSString * const BMDeviceIsInTargetsKey;
-
 extern NSString * const BMLocalName;
 
 @interface BluetoothManager : NSObject <
@@ -30,13 +32,11 @@ extern NSString * const BMLocalName;
 > {
     CBCentralManager *centralManager;
     __strong CBPeripheral *aPeripheral;
+    BlePeripherals *knownPeripherls;
     
     NSMutableArray *targetUUIDs;
     NSMutableDictionary *peripherals;
-    
-    CBUUID *targetServiceCharacteristic;
-    
-    NSMutableArray *targetLocalNames;
+
 }
 
 + (BluetoothManager *)sharedManager;

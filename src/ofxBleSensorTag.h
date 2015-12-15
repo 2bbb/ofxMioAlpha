@@ -1,19 +1,21 @@
 //
-//  ofxMioAlpha.h
+//  ofxBleSensorTag.h
 //
-//  Created by ISHII 2bit
+//  Created by Morimasa Aketa on 2015/12/12.
+//  Based on the code by ISHII 2bit on 2014/02/01.
+//  Copyright (c) 2015 Morimasa Aketa
 //
 
 #pragma once
 
-#include "ofxMioAlphaInterface.h"
+#include "ofxBleSensorTagInterface.h"
 
-class ofxMioAlpha : public ofxMioAlphaInterface {
+class ofxBleSensorTag : public ofxBleSensorTagInterface {
 public:
-    ofxMioAlpha();
-    virtual ~ofxMioAlpha();
+    ofxBleSensorTag();
+    virtual ~ofxBleSensorTag();
     
-    void setup(ofxMioAlphaInterface *interface = NULL);
+    void setup(ofxBleSensorTagInterface *interface = NULL);
     void addDeviceUUID(const string &uuid);
     bool startScan();
     void stopScan();
@@ -26,7 +28,7 @@ public:
     const vector<string> &getUnknownDeviceUUIDs() const;
     
     void findDevice(const string &uuid, bool isInTarget);
-    void receiveHeartRate(const string &uuid, int heartRate);
+    void receiveValue(const string &uuid, double value, int type);
     void updateConnectionState(const string &uuid, bool isConnected);
     
 private:
@@ -36,6 +38,6 @@ private:
     vector<string> connectedDeviceUUIDs;
     vector<string> unknownDeviceUUIDs;
     
-    ofxMioAlphaInterface *interface;
+    ofxBleSensorTagInterface *interface;
     void *bridge;
 };

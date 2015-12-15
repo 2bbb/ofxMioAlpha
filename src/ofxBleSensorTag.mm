@@ -1,31 +1,34 @@
 //
-//  ofxMioAlpha.mm
+//  ofxBleSensorTag.mm
 //
-//  Created by ISHII 2bit
+//  Created by Morimasa Aketa on 2015/12/12.
+//  Based on the code by ISHII 2bit on 2014/02/01.
+//  Copyright (c) 2015 Morimasa Aketa
 //
 
-#include "ofxMioAlpha.h"
-#import "ofxMioAlphaBridge.h"
+#include "ofxBleSensorTag.h"
+#import "ofxBleSensorTagBridge.h"
 #import "BluetoothManager.h"
 
-ofxMioAlpha::ofxMioAlpha() {
+ofxBleSensorTag::ofxBleSensorTag() {
     bridge = NULL;
 }
 
-ofxMioAlpha::~ofxMioAlpha() {
+ofxBleSensorTag::~ofxBleSensorTag() {
     if(bridge != NULL) {
-        [(ofxMioAlphaBridge *)bridge release];
+        [(ofxBleSensorTagBridge *)bridge release];
         bridge = NULL;
     }
     this->stopScan();
 }
 
-void ofxMioAlpha::setup(ofxMioAlphaInterface *interface) {
-    bridge = (void *)[[ofxMioAlphaBridge alloc] initWithInterface:this];
+void ofxBleSensorTag::setup(ofxBleSensorTagInterface *interface) {
+    bridge = (void *)[[ofxBleSensorTagBridge alloc] initWithInterface:this];
     this->interface = interface;
+
 }
 
-void ofxMioAlpha::addDeviceUUID(const string &uuid) {
+void ofxBleSensorTag::addDeviceUUID(const string &uuid) {
     deviceConnectionInfos.insert(map<string, bool>::value_type(uuid, false));
     latestHeartRates.insert(map<string, vector<int> >::value_type(uuid, vector<int>()));
     NSString *uuidStr = [NSString stringWithCString:uuid.c_str()
@@ -33,42 +36,42 @@ void ofxMioAlpha::addDeviceUUID(const string &uuid) {
     [[BluetoothManager sharedManager] addTargetUUID:uuidStr];
 }
 
-bool ofxMioAlpha::startScan() {
+bool ofxBleSensorTag::startScan() {
     return (bool)[[BluetoothManager sharedManager] scan];
 }
 
-void ofxMioAlpha::stopScan() {
+void ofxBleSensorTag::stopScan() {
     [[BluetoothManager sharedManager] stopScan];
 }
 
-void ofxMioAlpha::disconnect() {
+void ofxBleSensorTag::disconnect() {
     [[BluetoothManager sharedManager] disconnect];
 }
 
 #pragma mark getter
 
-vector<int> ofxMioAlpha::getLatestHeartBeatsFromDevice(const string &uuid) {
+vector<int> ofxBleSensorTag::getLatestHeartBeatsFromDevice(const string &uuid) {
     vector<int> results = latestHeartRates[uuid];
     latestHeartRates[uuid].clear();
     
     return results;
 }
 
-bool ofxMioAlpha::isConnectedToDevice(const string &uuid) const {
+bool ofxBleSensorTag::isConnectedToDevice(const string &uuid) const {
     return deviceConnectionInfos.at(uuid);
 }
 
-const vector<string> &ofxMioAlpha::getConnectedDeviceUUIDs() const {
+const vector<string> &ofxBleSensorTag::getConnectedDeviceUUIDs() const {
     return connectedDeviceUUIDs;
 }
 
-const vector<string> &ofxMioAlpha::getUnknownDeviceUUIDs() const {
+const vector<string> &ofxBleSensorTag::getUnknownDeviceUUIDs() const {
     return unknownDeviceUUIDs;
 }
 
-#pragma mark implementation of ofxMioAlphaInterface
+#pragma mark implementation of ofxBleSensorTagInterface
 
-void ofxMioAlpha::findDevice(const string &uuid, bool isInTarget) {
+void ofxBleSensorTag::findDevice(const string &uuid, bool isInTarget) {
     if(isInTarget) {
         
     } else {
@@ -81,13 +84,13 @@ void ofxMioAlpha::findDevice(const string &uuid, bool isInTarget) {
     }
 }
 
-void ofxMioAlpha::receiveHeartRate(const string &uuid, int heartRate) {
-    latestHeartRates[uuid].push_back(heartRate);
+void ofxBleSensorTag::receiveValue(const string &uuid, double value,int  type) {
+    latestHeartRates[uuid].push_back((int)value);
     
-    if(interface) interface->receiveHeartRate(uuid, heartRate);
+    if(interface) interface->receiveValue(uuid, value, type);
 }
 
-void ofxMioAlpha::updateConnectionState(const string &uuid, bool isConnected) {
+void ofxBleSensorTag::updateConnectionState(const string &uuid, bool isConnected) {
     deviceConnectionInfos[uuid] = isConnected;
     
     if(interface) interface->updateConnectionState(uuid, isConnected);

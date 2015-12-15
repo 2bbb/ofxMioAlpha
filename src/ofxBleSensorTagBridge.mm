@@ -1,14 +1,16 @@
 //
-//  ofxMioAlphaBridge.mm
+//  ofxBleSensorTagBridge.mm
 //
-//  Created by ISHII 2bit on 2014/06/06.
+//  Created by Morimasa Aketa on 2015/12/12.
+//  Based on the code by ISHII 2bit on 2014/02/01.
+//  Copyright (c) 2015 Morimasa Aketa
 //
 //
 
-#import "ofxMioAlphaBridge.h"
+#import "ofxBleSensorTagBridge.h"
 #import "BluetoothManager.h"
 
-@interface ofxMioAlphaBridge ()
+@interface ofxBleSensorTagBridge ()
 
 - (void)foundDevice:(NSNotification *)notification;
 - (void)updateValue:(NSNotification *)notification;
@@ -17,9 +19,9 @@
 
 @end
 
-@implementation ofxMioAlphaBridge
+@implementation ofxBleSensorTagBridge
 
-- (instancetype)initWithInterface:(ofxMioAlphaInterface *)_interface {
+- (instancetype)initWithInterface:(ofxBleSensorTagInterface *)_interface {
     self = [super init];
     if(self) {
         interface = _interface;
@@ -53,9 +55,10 @@
 
 - (void)updateValue:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
-    int heartRate = [[userInfo objectForKey:BMHeartRateBPMKey] intValue];
+    double value = [[userInfo objectForKey:BMValueKey] doubleValue];
+    int type = [[userInfo objectForKey:BMSensorTypeKey] integerValue];
     string uuid([[userInfo objectForKeyedSubscript:BMDeviceKey] cStringUsingEncoding:NSUTF8StringEncoding]);
-    interface->receiveHeartRate(uuid, heartRate);
+    interface->receiveValue(uuid, value, type);
 }
 
 - (void)connected:(NSNotification *)notification {
